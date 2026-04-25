@@ -1,6 +1,6 @@
 /*!
  * cfDump.js v1.0.0 — https://github.com/JamoCA/cfDump.js
- * Dependency-free JS value dumper with CFML <cfdump>-style output.
+ * Dependency-free JS value dumper with CFML cfdump-style output.
  *
  * Visual design derived from an unattributed jQuery plugin (jquery.dump.js,
  * earliest known source: Net Grow Web Design, Sydney, circa 2011-2012, no
