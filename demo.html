@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>cfDump.js - demo</title>
+<style>
+	body { font-family: Verdana, Arial, sans-serif; max-width: 80rem; margin: 1rem auto; padding: 0 1rem; }
+	section { border: 1px solid #ccc; padding: 1rem; margin: 1.5rem 0; }
+	section h2 { margin-top: 0; }
+	button { margin-top: 0.5rem; }
+	.demo-output { margin-top: 1rem; }
+	code { background: #f4f4f4; padding: 1px 4px; border-radius: 3px; }
+	textarea { width: 100%; min-height: 8rem; font-family: monospace; }
+	.err { color: #c00; font-weight: bold; }
+	#demoDomTarget { border: 1px dashed #888; padding: 0.5rem; }
+</style>
+</head>
+<body>
+	<h1>cfDump.js demo</h1>
+	<p>Each section below shows one way to call <code>cfDump</code>. Popups don't auto-open - click the buttons.</p>
+
+	<section id="sec1">
+		<h2>1. Native call, inline, default options</h2>
+		<p><code>cfDump(sampleObj, true, true, false)</code></p>
+		<button data-demo="1">Run</button>
+		<div class="demo-output" id="out1"></div>
+	</section>
+
+	<section id="sec2">
+		<h2>2. Option toggles - showTypes off, inline</h2>
+		<p><code>cfDump(sampleObj, false, true, false)</code> - keys render without the type suffix.</p>
+		<button data-demo="2">Run</button>
+		<div class="demo-output" id="out2"></div>
+	</section>
+
+	<section id="sec3">
+		<h2>3. Popup mode</h2>
+		<p><code>cfDump(sampleObj, true, true, true)</code> - opens a new window.</p>
+		<button data-demo="3">Run</button>
+	</section>
+
+	<section id="sec4">
+		<h2>4. <code>jQuery.dump</code> static form</h2>
+		<p><code>jQuery.dump(sampleObj, true, true, false)</code> - alias of <code>cfDump</code>.</p>
+		<button data-demo="4">Run</button>
+		<div class="demo-output" id="out4"></div>
+	</section>
+
+	<section id="sec5">
+		<h2>5. <code>$(el).dump()</code> plugin form</h2>
+		<p>
+		The plugin form returns the jQuery collection for chaining and <em>discards</em> the HTML output.
+		Useful with popup mode; for inline rendering, call <code>cfDump(el, ...)</code> directly.
+		</p>
+		<div id="demoDomTarget">I am a DOM element with attributes.</div>
+		<button data-demo="5-popup">Run popup form: <code>$(...).dump(true, true, true)</code></button>
+		<button data-demo="5-inline">Run direct form: <code>cfDump($(...)[0], true, true, false)</code></button>
+		<div class="demo-output" id="out5"></div>
+	</section>
+
+	<section id="sec6">
+		<h2>6. The everything sample</h2>
+		<p>One dump containing every type, so all color palettes are visible.</p>
+		<button data-demo="6">Run</button>
+		<div class="demo-output" id="out6"></div>
+	</section>
+
+	<section id="sec7">
+		<h2>7. Live JSON</h2>
+		<p>
+		Paste or type JSON below and click Render.
+		JSON only - this won't show functions, Date objects, regex, or DOM elements,
+		since those aren't representable in JSON. Use the sections above for those.
+		</p>
+		<textarea id="jsonInput">{
+	"user": "alice",
+	"roles": ["admin", "editor"],
+	"meta": { "lastLogin": "2026-04-24T10:15:00Z", "visits": 42 }
+	}</textarea>
+		<div>
+		<button id="btnRenderJson">Render</button>
+		</div>
+		<p class="err" id="jsonError" style="display:none;"></p>
+		<div class="demo-output" id="out7"></div>
+	</section>
+
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script src="cfDump.min.js"></script>
+	<script>
+		var sampleObj = {
+		name: 'Alice',
+		age: 30,
+		roles: ['admin', 'editor'],
+		meta: { lastLogin: new Date(), visits: 42 }
+		};
+
+		var everything = {
+			str: 'hello <world> & "friends"',
+			num: 42,
+			bool: true,
+			nullVal: null,
+			arr: [1, 2, { x: 'y' }],
+			obj: { deep: { deeper: { deepest: 'leaf' } } },
+			fn: function add(a, b) { return a + b; },
+			re: /foo(bar)?/gi,
+			dt: new Date(),
+			err: new ReferenceError('demo'),
+			dom: null
+		};
+
+		function inject(id, html) {
+			var target = document.getElementById(id);
+			target.innerHTML = '';
+			target.innerHTML = html;
+		}
+
+		document.querySelectorAll('button[data-demo]').forEach(function (btn) {
+		btn.addEventListener('click', function () {
+			var key = btn.getAttribute('data-demo');
+			switch (key) {
+			case '1': inject('out1', cfDump(sampleObj, true, true, false));   break;
+			case '2': inject('out2', cfDump(sampleObj, false, true, false));  break;
+			case '3': cfDump(sampleObj, true, true, true); break;
+			case '4': inject('out4', jQuery.dump(sampleObj, true, true, false)); break;
+			case '5-popup':  jQuery('#demoDomTarget').dump(true, true, true); break;
+			case '5-inline': inject('out5', cfDump(jQuery('#demoDomTarget')[0], true, true, false)); break;
+			case '6':
+				everything.dom = document.getElementById('demoDomTarget');
+				inject('out6', cfDump(everything, true, true, false));
+				break;
+			}
+		});
+		});
+
+		document.getElementById('btnRenderJson').addEventListener('click', function () {
+			var errEl = document.getElementById('jsonError');
+			errEl.style.display = 'none';
+			errEl.textContent = '';
+			var parsed;
+			try {
+				parsed = JSON.parse(document.getElementById('jsonInput').value);
+			} catch (e) {
+				errEl.textContent = 'Invalid JSON: ' + e.message;
+				errEl.style.display = 'block';
+				document.getElementById('out7').innerHTML = '';
+				return;
+			}
+			inject('out7', cfDump(parsed, true, true, false));
+		});
+	</script>
+</body>
+</html>

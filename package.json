@@ -1,0 +1,30 @@
+{
+  "name": "cfdump-js",
+  "version": "1.0.0",
+  "description": "Vanilla JavaScript debugging utility that renders any value as CFML-style nested, color-coded, collapsible HTML tables.",
+  "main": "cfDump.js",
+  "scripts": {
+    "build": "terser cfDump.js -c -m --comments \"/^!/\" -o cfDump.min.js --source-map \"url='cfDump.min.js.map'\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JamoCA/cfDump.js.git"
+  },
+  "keywords": [
+    "javascript",
+    "vanilla-js",
+    "debugging",
+    "debug-tool",
+    "coldfusion",
+    "cfml",
+    "cfdump",
+    "dump",
+    "pretty-print",
+    "developer-tools"
+  ],
+  "author": "James Moberg",
+  "license": "MIT",
+  "devDependencies": {
+    "terser": "^5.31.0"
+  }
+}
